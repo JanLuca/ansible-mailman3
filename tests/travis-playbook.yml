@@ -3,5 +3,5 @@
 - hosts: all
   remote_user: root
   roles:
-  - role: ansible-mediawiki
+  - role: ansible-mailman3
     server_name: 'localhost'
