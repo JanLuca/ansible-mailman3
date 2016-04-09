@@ -84,9 +84,16 @@
             group={{mailman_group}}
             mode=0700
 
+- name: Copy buildout config to own file
+  copy:
+    src:        "{{mailman_path}}/bundler/buildout.cfg"
+    dest:       "{{mailman_path}}/bundler/my_buildout.cfg"
+    remote_src: True
+    force:      no
+
 - name: Set buildout to production mode
   lineinfile:
-    dest:   "{{mailman_path}}/bundler/buildout.cfg"
+    dest:   "{{mailman_path}}/bundler/my_buildout.cfg"
     regexp: "^deployment"
     line:   "deployment = production"
 

@@ -4,7 +4,7 @@ source {{mailman_path}}/bin/activate
 
 cd {{mailman_path}}/bundler
 
-buildout
+buildout -c my_buildout.cfg
 
 ./bin/mailman-post-update
 
