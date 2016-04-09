@@ -5,3 +5,4 @@
   roles:
   - role: ansible-mailman3
     server_name: 'localhost'
+    mailman_superuser_password: 'Test123'
