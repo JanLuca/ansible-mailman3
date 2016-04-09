@@ -1,0 +1,8 @@
+---
+
+mailman_user: 'mailman'
+mailman_group: 'mailman'
+mailman_path: '/srv/mailman'
+
+mailman_superuser_name: 'Admin'
+mailman_superuser_email: 'webmaster@zapf.wiki'

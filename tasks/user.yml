@@ -1,0 +1,13 @@
+---
+
+- name: create mailman group
+  group:
+    name: '{{mailman_group}}'
+    system: yes
+
+- name: create mailman user
+  user:
+    name: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    home: '{{mailman_path}}'
+    system: yes

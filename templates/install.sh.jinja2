@@ -1,0 +1,9 @@
+#!/bin/bash
+
+source {{mailman_path}}/bin/activate
+
+cd {{mailman_path}}/bundler
+
+buildout
+
+./bin/mailman-post-update
