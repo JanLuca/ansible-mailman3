@@ -87,6 +87,7 @@
 - name: Create superuser
   expect:
     command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh" creates="{{mailman_path}}/superuser.done"
-    response: Username: {{mailman_superuser_name}}
-              Email:    {{mailman_superuser_email}}
-              Password: {{mailman_superuser_password}}
+    responses: 
+      (?i)Username: '{{mailman_superuser_name}}'
+      (?i)Email:    '{{mailman_superuser_email}}'
+      (?i)Password: '{{mailman_superuser_password}}'
