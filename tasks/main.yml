@@ -82,11 +82,11 @@
             mode=0700
 
 - name: Run install.sh
-  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh"
+  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh" creates="{{mailman_path}}/install.done"
 
 - name: Create superuser
   expect:
-    command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
+    command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh" creates="{{mailman_path}}/superuser.done"
     response: Username: {{mailman_superuser_name}}
               Email:    {{mailman_superuser_email}}
               Password: {{mailman_superuser_password}}

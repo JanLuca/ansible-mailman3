@@ -5,3 +5,5 @@ source {{mailman_path}}/bin/activate
 cd {{mailman_path}}/bundler
 
 ./bin/mailman-web-django-admin createsuperuser
+
+touch {{mailman_path}}/superuser.done
