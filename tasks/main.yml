@@ -38,11 +38,11 @@
     nodenv_group: '{{mailman_group}}'
   tags: node
 
+# Not use depth since GitLab does not support it :-(
 - name: clone mailman-bundler
   git: repo=https://gitlab.com/mailman/mailman-bundler.git
        dest=/srv/mailman/bundler
        version={{mailman_bundler_version|default('HEAD')}}
-       depth=1
   register: cloned_mailman_bundler
 
 - name: change ownership of mailman-bundler

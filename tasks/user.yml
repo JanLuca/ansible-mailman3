@@ -11,3 +11,12 @@
     group: '{{mailman_group}}'
     home: '{{mailman_path}}'
     system: yes
+  register: mailman_user_created
+
+- name: change ownership of mailman user home
+  file:
+    path: ~{{mailman_user}}
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    recurse: yes
+  when: mailman_user_created.changed
