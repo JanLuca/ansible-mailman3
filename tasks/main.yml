@@ -30,9 +30,7 @@
   when: ansible_os_family == 'Debian'
 
 - name: Ensure that pexpect is installed
-  apt: name=python-pexpect
-       state=present
-  when: ansible_os_family == 'Debian'
+  pip: name=pexpect
 
 - include: user.yml
 
