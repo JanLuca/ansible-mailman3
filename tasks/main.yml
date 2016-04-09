@@ -31,12 +31,12 @@
 
 - include: user.yml
 
-- include: nodenv.yml
-  vars:
-    node_version: 4.4.2
-    nodenv_user: '{{mailman_user}}'
-    nodenv_group: '{{mailman_group}}'
-  tags: node
+#- include: nodenv.yml
+#  vars:
+#    node_version: 4.4.2
+#    nodenv_user: '{{mailman_user}}'
+#    nodenv_group: '{{mailman_group}}'
+#  tags: node
 
 # Not use depth since GitLab does not support it :-(
 - name: clone mailman-bundler
