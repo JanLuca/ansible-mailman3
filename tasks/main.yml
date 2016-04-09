@@ -3,7 +3,7 @@
 - name: Ensure that git is installed
   apt: name=git
        state=present
-  when: ansible_distribution == 'Debian'
+  when: ansible_os_family == 'Debian'
   tags: git
 
 - name: Ensure that basic build tools are installed
@@ -11,7 +11,7 @@
     name: '{{item}}'
   with_items:
   - build-essential
-  when: ansible_distribution == 'Debian'
+  when: ansible_os_family == 'Debian'
 
 - name: Install python3 dependencies for Mailman 3
   apt:
@@ -22,12 +22,12 @@
   - python-dev
   - python-pip
   - python-virtualenv
-  when: ansible_distribution == 'Debian'
+  when: ansible_os_family == 'Debian'
 
 - name: Ensure that ruby-sass is installed
   apt: name=ruby-sass
        state=present
-  when: ansible_distribution == 'Debian'
+  when: ansible_os_family == 'Debian'
 
 - include: user.yml
 
@@ -43,7 +43,7 @@
        dest=/srv/mailman/bundler
        version={{mailman-bundler_version|default('HEAD')}}
        depth=1
-  register: cloned_mailman-bundler
+  register: cloned_mailman_bundler
 
 - name: change ownership of mailman-bundler
   file:
@@ -51,7 +51,7 @@
     owner: '{{mailman_user}}'
     group: '{{mailman_group}}'
     recurse: yes
-  when: cloned_mailman-bundler.changed
+  when: cloned_mailman_bundler.changed
 
 - name: Setup a virtualenv for mailman
   command: su - {{mailman_user}} -c "virtualenv {{mailman_path}}/venv" creates="{{mailman_path}}/venv"
