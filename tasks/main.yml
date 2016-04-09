@@ -84,6 +84,12 @@
             group={{mailman_group}}
             mode=0700
 
+- name: Set buildout to production mode
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/buildout.cfg"
+    regexp: "^deployment"
+    line:   "deployment = production"
+
 - name: Run install.sh
   command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh" creates="{{mailman_path}}/install.done"
 
