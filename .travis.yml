@@ -15,7 +15,7 @@ before_install:
 - sudo apt-get update -qq
 
 install:
-- sudo apt-get install systemd-services
+- sudo apt-get install -y -q systemd-services
 - pip install ansible==$ANSIBLE_VERSION
 - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
 - ansible-galaxy install -r requirements.yml
