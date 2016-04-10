@@ -6,3 +6,5 @@
   - role: ansible-mailman3
     server_name: 'localhost'
     mailman_superuser_password: 'Test123'
+    mailman_production_secret_key: 'SECRET'
+    mailman_api_key: 'API_KEY'
