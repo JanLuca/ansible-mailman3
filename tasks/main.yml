@@ -125,6 +125,7 @@
             owner={{mailman_user}}
             group={{mailman_group}}
             mode=0600
+  register: settings_copied
 
 - name: Set site owner in mailman.cfg
   lineinfile:
@@ -155,3 +156,7 @@
     dest:   "{{mailman_path}}/bundler/deployment/gunicorn.conf"
     regexp: "^bind"
     line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
+
+- name: Run post update
+  command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
+  when: settings_copied.changed
