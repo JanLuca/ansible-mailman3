@@ -4,5 +4,8 @@ mailman_user: 'mailman'
 mailman_group: 'mailman'
 mailman_path: '/srv/mailman'
 
+mailman_domain:  'example.org'
+mailman_use_ssl: False
+
 mailman_superuser_name: 'Admin'
-mailman_superuser_email: 'webmaster@zapf.wiki'
+mailman_superuser_email: 'webmaster@example.org'

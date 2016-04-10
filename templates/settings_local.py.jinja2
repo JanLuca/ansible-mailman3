@@ -6,6 +6,9 @@ MAILMAN_ARCHIVER_KEY = '{{mailman_api_key}}'
 
 VAR_DIR = os.path.join("{{mailman_path}}", "bundler", "var")
 
+ALLOWED_HOSTS = ["localhost", "{{mailman_domain}}"]
+BROWSERID_AUDIENCES = [ "http://localhost", "http://localhost:8000", {% if mailman_use_ssl %}"https://{{mailman_domain}}", "https://{{mailman_domain}}:8000"{% else %}"http://{{mailman_domain}}", "http://{{mailman_domain}}:8000"{% endif %} ]
+
 LANGUAGE_CODE = 'de-de'
 
 TIME_ZONE = 'Europe/Berlin'
