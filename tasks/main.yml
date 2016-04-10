@@ -111,3 +111,47 @@
       (?i)Email:    '{{mailman_superuser_email}}'
       (?i)Password: '{{mailman_superuser_password}}'
 
+- name: Create log directory for mailman-web
+  file:
+    path:  "/var/log/mailman-web"
+    state: "directory"
+    owner: "{{mailman_user}}"
+    group: "{{mailman_group}}"
+    mode:  "0770"
+
+- name: Copy setting_local.py to right place
+  template: src=settings_local.py.jinja2
+            dest={{mailman_path}}/bundler/mailman_web/settings_local.py
+            owner={{mailman_user}}
+            group={{mailman_group}}
+            mode=0600
+
+- name: Set site owner in mailman.cfg
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/deployment/mailman.cfg"
+    regexp: "^site_owner"
+    line:   "site_owner = {{mailman_superuser_email}}"
+
+- name: Set the API key in mailman.cfg
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/deployment/mailman-hyperkitty.cfg"
+    regexp: "^api_key"
+    line:   "api_key = {{mailman_api_key}}"
+
+- name: Set user for mailman-web-gunicorn.service
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
+    regexp: "User"
+    line:   "User=www-data"
+
+- name: Set group for mailman-web-gunicorn.service
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
+    regexp: "Group"
+    line:   "Group=mailman"
+
+- name: Set socket in gunicorn.conf
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/deployment/gunicorn.conf"
+    regexp: "^bind"
+    line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"

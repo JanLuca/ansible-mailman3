@@ -1,0 +1,35 @@
+import os
+
+SECRET_KEY = '{{mailman_production_secret_key}}'
+
+MAILMAN_ARCHIVER_KEY = '{{mailman_api_key}}'
+
+VAR_DIR = os.path.join({{mailman_path}}, "bundler", "var")
+
+LANGUAGE_CODE = 'de-de'
+
+TIME_ZONE = 'Europe/Berlin'
+
+EMAIL_CONFIRMATION_FROM = '{{mailman_superuser_email}}'
+
+ADMINS = (
+     ('Mailman Admin', '{{mailman_superuser_email}}'),
+)
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3', # Last part is one of 'postgresql_psycopg2', 'mysql', 'sqlite3' or '$
+        'NAME': os.path.join(VAR_DIR, 'mailman-web', 'mailman-web.sqlite'), # path to database file if using sqlite3.
+    }
+}
+
+MEDIA_ROOT = os.path.join(VAR_DIR, 'media')
+
+STATIC_ROOT = os.path.join(VAR_DIR, "mailman-web", "static")
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(VAR_DIR, "mailman-web", "fulltext_index"),
+    },
+}
