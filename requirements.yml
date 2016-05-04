@@ -3,3 +3,5 @@
 - src: https://github.com/fabianfreyer/ansible-nginx_site.git
   name: nginx_site
 
+- src: https://github.com/JanLuca/ansible-postfix.git
+  name: postfix
