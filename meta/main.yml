@@ -1,3 +1,3 @@
 ---
 dependencies:
-  - { role: postfix, postfix_mail_domain: {{mailman_domain}} }
+  - { role: postfix }
