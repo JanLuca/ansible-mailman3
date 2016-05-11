@@ -167,6 +167,19 @@
        version:    "latest"
        virtualenv: "{{mailman_path}}/bundler/venv-3.4"
 
+- name: Add destination for mailman
+  lineinfile:
+    dest:  "/etc/postfix/destinations"
+    line:  "{{mailman_domain}} OK"
+    regexp: "^{{mailman_domain}}"
+    insertbefore: "BOF"
+  register: dest_file
+
+- name: Run postmap for the destination file
+  command: "postmap /etc/postfix/destinations"
+  notify: reload postfix
+  when: dest_file.changed
+
 - name: Run post update
   command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
   when: settings_copied.changed
