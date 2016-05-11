@@ -180,6 +180,18 @@
   notify: reload postfix
   when: dest_file.changed
 
+- name: Fetch postfix config for mailman
+  fetch:
+    dest: "/tmp/mailmain_postfix.cfg"
+    src:  "{{mailman_path}}/bundler/deployment/postfix-main.cf"
+
+- name: Copy postfix config into main.cf
+  blockinfile:
+    dest:  "/etc/postfix/main.cf"
+    marker:  "## {mark} ANSIBLE MANAGED BLOCK FOR MAILMAN3 ##"
+    insertafter: "EOF"
+    block: "{{ lookup('file', '/tmp/mailmain_postfix.cfg') }}"
+
 - name: Run post update
   command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
   when: settings_copied.changed
