@@ -158,14 +158,16 @@
     line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
 
 - name: Downgrade falcon to version 0.3
-  pip: name:       "falcon"
-       version:    "0.3"
-       virtualenv: "{{mailman_path}}/bundler/venv-3.4"
+  pip:
+    name:       "falcon"
+    version:    "0.3"
+    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
 
 - name: Upgrade mailman to latest version
-  pip: name:       "mailman"
-       version:    "latest"
-       virtualenv: "{{mailman_path}}/bundler/venv-3.4"
+  pip: 
+    name:       "mailman"
+    version:    "latest"
+    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
 
 - name: Add destination for mailman
   lineinfile:
