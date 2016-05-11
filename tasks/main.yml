@@ -157,17 +157,17 @@
     regexp: "^bind"
     line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
 
-- name: Downgrade falcon to version 0.3
-  pip:
-    name:       "falcon"
-    version:    "0.3"
-    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
+#- name: Downgrade falcon to version 0.3
+#  pip:
+#    name:       "falcon"
+#    version:    "0.3"
+#    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
 
-- name: Upgrade mailman to latest version
-  pip: 
-    name:       "mailman"
-    version:    "latest"
-    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
+#- name: Upgrade mailman to latest version
+#  pip: 
+#    name:       "mailman"
+#    state:    "latest"
+#    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
 
 - name: Add destination for mailman
   lineinfile:
@@ -186,6 +186,7 @@
   fetch:
     dest: "/tmp/mailmain_postfix.cfg"
     src:  "{{mailman_path}}/bundler/deployment/postfix-main.cf"
+    flat: "yes"
 
 - name: Copy postfix config into main.cf
   blockinfile:
