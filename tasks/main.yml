@@ -84,6 +84,13 @@
             group={{mailman_group}}
             mode=0700
 
+- name: copy downgrade_falcon.sh
+  template: src=downgrade_falcon.sh.jinja2
+            dest={{mailman_path}}/scripts/downgrade_falcon.sh
+            owner={{mailman_user}}
+            group={{mailman_group}}
+            mode=0700
+
 - name: Copy buildout config to own file
   copy:
     src:        "{{mailman_path}}/bundler/buildout.cfg"
@@ -157,6 +164,9 @@
     regexp: "^bind"
     line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
 
+- name: Run downgrade_falcon.sh
+  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/downgrade_falcon.sh" creates="{{mailman_path}}/downgrade_falcon.done"
+
 #- name: Downgrade falcon to version 0.3
 #  pip:
 #    name:       "falcon"
@@ -198,3 +208,34 @@
 - name: Run post update
   command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
   when: settings_copied.changed
+
+- name: Copy mailman3.service file to systemd dir
+  copy:
+    src:        "{{mailman_path}}/bundler/deployment/mailman3.service"
+    dest:       "/etc/systemd/system/mailman3.service"
+    owner:      "root"
+    group:      "root"
+    remote_src: True
+    force:      no
+
+- name: Enable and start mailman3.service
+  service:
+    name:    "mailman3"
+    state:   "started"
+    enabled: "yes"
+
+- name: Copy mailman-web-gunicorn.service file to systemd dir
+  copy:
+    src:        "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
+    dest:       "/etc/systemd/system/mailman-web-gunicorn.service"
+    owner:      "root"
+    group:      "root"
+    remote_src: True
+    force:      no
+
+- name: Enable and start mailman-web-gunicorn.service
+  service:
+    name:    "mailman-web-gunicorn"
+    state:   "started"
+    enabled: "yes"
+
