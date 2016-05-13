@@ -2,6 +2,7 @@
 
 mailman_user: 'mailman'
 mailman_group: 'mailman'
+mailman_web_user: 'www-data'
 mailman_path: '/srv/mailman'
 
 mailman_domain:  'example.org'

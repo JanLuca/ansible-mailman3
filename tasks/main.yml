@@ -29,6 +29,11 @@
        state=present
   when: ansible_os_family == 'Debian'
 
+- name: Ensure that libpq-dev is installed
+  apt: name=libpq-dev
+       state=present
+  when: ansible_os_family == 'Debian'
+
 - name: Ensure that pexpect is installed
   pip: name=pexpect
 
@@ -150,13 +155,13 @@
   lineinfile:
     dest:   "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
     regexp: "User"
-    line:   "User=www-data"
+    line:   "User={{mailman_web_user}}"
 
 - name: Set group for mailman-web-gunicorn.service
   lineinfile:
     dest:   "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
     regexp: "Group"
-    line:   "Group=mailman"
+    line:   "Group={{mailman_group}}"
 
 - name: Set socket in gunicorn.conf
   lineinfile:
@@ -204,6 +209,14 @@
     marker:  "## {mark} ANSIBLE MANAGED BLOCK FOR MAILMAN3 ##"
     insertafter: "EOF"
     block: "{{ lookup('file', '/tmp/mailmain_postfix.cfg') }}"
+
+- name: Set correct permissions for log for mailman-web
+  file:
+    path:  "/var/log/mailman-web/mailman-web.log"
+    state: "touch"
+    owner: "{{mailman_web_user}}"
+    group: "{{mailman_group}}"
+    mode:  "0660"
 
 - name: Run post update
   command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
