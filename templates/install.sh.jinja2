@@ -5,6 +5,6 @@ source {{mailman_path}}/venv/bin/activate
 cd {{mailman_path}}/bundler
 
 buildout -c my_buildout.cfg
-buildout -c my_buildout.cfg gunicorn
+buildout -c my_buildout.cfg install gunicorn
 
 touch {{mailman_path}}/install.done
