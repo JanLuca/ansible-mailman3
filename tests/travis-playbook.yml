@@ -8,3 +8,4 @@
     mailman_superuser_password: 'Test123'
     mailman_production_secret_key: 'SECRET'
     mailman_api_key: 'API_KEY'
+    postfix_mail_domain: 'localhost'
