@@ -119,9 +119,9 @@
     command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
     creates: "{{mailman_path}}/superuser.done"
     responses: 
-      (?i)Username: '{{mailman_superuser_name}}'
-      (?i)Email:    '{{mailman_superuser_email}}'
-      (?i)Password: '{{mailman_superuser_password}}'
+      (?i)Username: "{{mailman_superuser_name}}\n"
+      (?i)Email:    "{{mailman_superuser_email}}\n"
+      (?i)Password: "{{mailman_superuser_password}}n"
 
 - name: Create log directory for mailman-web
   file:
@@ -136,7 +136,7 @@
             dest={{mailman_path}}/bundler/mailman_web/settings_local.py
             owner={{mailman_user}}
             group={{mailman_group}}
-            mode=0600
+            mode=0640
   register: settings_copied
 
 - name: Set site owner in mailman.cfg
@@ -210,6 +210,11 @@
     insertafter: "EOF"
     block: "{{ lookup('file', '/tmp/mailmain_postfix.cfg') }}"
 
+- name: Check if mailman-web log exists
+  stat:
+    path: "/var/log/mailman-web/mailman-web.log"
+  register: mailman_web_log_file
+
 - name: Set correct permissions for log for mailman-web
   file:
     path:  "/var/log/mailman-web/mailman-web.log"
@@ -217,10 +222,19 @@
     owner: "{{mailman_web_user}}"
     group: "{{mailman_group}}"
     mode:  "0660"
+  when: mailman_web_log_file.stat.exists == False
 
 - name: Run post update
   command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
   when: settings_copied.changed
+
+- name: Set correct permissions for mailman database
+  file:
+    path:  "{{mailman_path}}/bundler/var/mailman-web/mailman-web.sqlite"
+    state: "file"
+    owner: "{{mailman_user}}"
+    group: "{{mailman_group}}"
+    mode:  "0660"
 
 - name: Copy mailman3.service file to systemd dir
   copy:
