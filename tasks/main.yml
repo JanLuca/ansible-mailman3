@@ -122,6 +122,7 @@
       (?i)Username: "{{mailman_superuser_name}}\n"
       (?i)Email:    "{{mailman_superuser_email}}\n"
       (?i)Password: "{{mailman_superuser_password}}n"
+  no_log: True
 
 - name: Create log directory for mailman-web
   file:
@@ -138,6 +139,7 @@
             group={{mailman_group}}
             mode=0640
   register: settings_copied
+  no_log: True
 
 - name: Set site owner in mailman.cfg
   lineinfile:
@@ -150,6 +152,7 @@
     dest:   "{{mailman_path}}/bundler/deployment/mailman-hyperkitty.cfg"
     regexp: "^api_key"
     line:   "api_key = {{mailman_api_key}}"
+  no_log: True
 
 - name: Set user for mailman-web-gunicorn.service
   lineinfile:
