@@ -121,7 +121,7 @@
     responses: 
       (?i)Username: "{{mailman_superuser_name}}\n"
       (?i)Email:    "{{mailman_superuser_email}}\n"
-      (?i)Password: "{{mailman_superuser_password}}n"
+      (?i)Password: "{{mailman_superuser_password}}\n"
   no_log: True
 
 - name: Create log directory for mailman-web
