@@ -244,12 +244,7 @@
     group:      "root"
     remote_src: True
     force:      no
-
-- name: Enable and start mailman3.service
-  service:
-    name:    "mailman3"
-    state:   "started"
-    enabled: "yes"
+  register: mailman3_service_file
 
 - name: Copy mailman-web-gunicorn.service file to systemd dir
   copy:
@@ -259,6 +254,17 @@
     group:      "root"
     remote_src: True
     force:      no
+  register: mailman_web_service_file
+
+- name: Run systemctl daemon-reload
+  shell: systemctl daemon-reload
+  when: mailman3_service_file.changed or mailman_web_service_file.changed
+
+- name: Enable and start mailman3.service
+  service:
+    name:    "mailman3"
+    state:   "started"
+    enabled: "yes"
 
 - name: Enable and start mailman-web-gunicorn.service
   service:

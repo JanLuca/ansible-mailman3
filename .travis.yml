@@ -13,6 +13,7 @@ env:
 before_install:
 # Make sure everything's up to date.
 - sudo apt-get update -qq
+- mkdir -p /etc/systemd/system
 
 install:
 - sudo apt-get install -y -q systemd-services
