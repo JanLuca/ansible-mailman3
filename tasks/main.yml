@@ -1,8 +1,8 @@
 ---
 
 - name: Ensure that git is installed
-  apt: name=git
-       state=present
+  apt:
+    name: git
   when: ansible_os_family == 'Debian'
   tags: git
 
@@ -26,12 +26,10 @@
 
 - name: Ensure that ruby-sass is installed
   apt: name=ruby-sass
-       state=present
   when: ansible_os_family == 'Debian'
 
 - name: Ensure that libpq-dev is installed
   apt: name=libpq-dev
-       state=present
   when: ansible_os_family == 'Debian'
 
 - name: Ensure that pexpect is installed
@@ -48,9 +46,10 @@
 
 # Not use depth since GitLab does not support it :-(
 - name: clone mailman-bundler
-  git: repo=https://gitlab.com/mailman/mailman-bundler.git
-       dest=/srv/mailman/bundler
-       version={{mailman_bundler_version|default('HEAD')}}
+  git:
+    repo: https://gitlab.com/mailman/mailman-bundler.git
+    dest: /srv/mailman/bundler
+    version: '{{mailman_bundler_version|default("HEAD")}}'
   register: cloned_mailman_bundler
 
 - name: change ownership of mailman-bundler
@@ -62,39 +61,46 @@
   when: cloned_mailman_bundler.changed
 
 - name: Setup a virtualenv for mailman
-  command: su - {{mailman_user}} -c "virtualenv {{mailman_path}}/venv" creates="{{mailman_path}}/venv"
+  command: su - {{mailman_user}} -c "virtualenv {{mailman_path}}/venv"
+  args:
+    creates: "{{mailman_path}}/venv"
 
 - name: Install buildout for mailman
-  pip: name=zc.buildout
-       virtualenv={{mailman_path}}/venv 
+  pip:
+    name: zc.buildout
+    virtualenv: '{{mailman_path}}/venv'
 
 - name: Create script directory
-  file: path={{mailman_path}}/scripts
-        state=directory
-        owner={{mailman_user}}
-        group={{mailman_group}}
-        mode=0700
+  file:
+    path:  '{{mailman_path}}/scripts'
+    state: directory
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
 - name: copy install.sh
-  template: src=install.sh.jinja2
-            dest={{mailman_path}}/scripts/install.sh
-            owner={{mailman_user}}
-            group={{mailman_group}}
-            mode=0700
+  template:
+    src:   install.sh.jinja2
+    dest:  '{{mailman_path}}/scripts/install.sh'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
 - name: copy superuser.sh
-  template: src=superuser.sh.jinja2
-            dest={{mailman_path}}/scripts/superuser.sh
-            owner={{mailman_user}}
-            group={{mailman_group}}
-            mode=0700
+  template:
+    src:   superuser.sh.jinja2
+    dest:  '{{mailman_path}}/scripts/superuser.sh'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
 - name: copy downgrade_falcon.sh
-  template: src=downgrade_falcon.sh.jinja2
-            dest={{mailman_path}}/scripts/downgrade_falcon.sh
-            owner={{mailman_user}}
-            group={{mailman_group}}
-            mode=0700
+  template:
+    src:   downgrade_falcon.sh.jinja2
+    dest:  '{{mailman_path}}/scripts/downgrade_falcon.sh'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
 - name: Copy buildout config to own file
   copy:
@@ -112,13 +118,15 @@
     line:   "deployment = production"
 
 - name: Run install.sh
-  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh" creates="{{mailman_path}}/install.done"
+  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh"
+  args:
+    creates: "{{mailman_path}}/install.done"
 
 - name: Create superuser
   expect:
     command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
     creates: "{{mailman_path}}/superuser.done"
-    responses: 
+    responses:
       (?i)Username: "{{mailman_superuser_name}}\n"
       (?i)Email:    "{{mailman_superuser_email}}\n"
       (?i)Password: "{{mailman_superuser_password}}\n"
@@ -133,11 +141,12 @@
     mode:  "0770"
 
 - name: Copy setting_local.py to right place
-  template: src=settings_local.py.jinja2
-            dest={{mailman_path}}/bundler/mailman_web/settings_local.py
-            owner={{mailman_user}}
-            group={{mailman_group}}
-            mode=0640
+  template:
+    src:   settings_local.py.jinja2
+    dest:  '{{mailman_path}}/bundler/mailman_web/settings_local.py'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0640
   register: settings_copied
   no_log: True
 
@@ -173,7 +182,9 @@
     line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
 
 - name: Run downgrade_falcon.sh
-  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/downgrade_falcon.sh" creates="{{mailman_path}}/downgrade_falcon.done"
+  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/downgrade_falcon.sh"
+  args:
+    creates: "{{mailman_path}}/downgrade_falcon.done"
 
 #- name: Downgrade falcon to version 0.3
 #  pip:
