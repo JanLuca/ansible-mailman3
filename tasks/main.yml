@@ -119,9 +119,9 @@
     command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
     creates: "{{mailman_path}}/superuser.done"
     responses: 
-      (?i)Username: "{{mailman_superuser_name}}\n"
-      (?i)Email:    "{{mailman_superuser_email}}\n"
-      (?i)Password: "{{mailman_superuser_password}}\n"
+      Username: "{{mailman_superuser_name}}\n"
+      Email:    "{{mailman_superuser_email}}\n"
+      Password: "{{mailman_superuser_password}}\n"
   no_log: True
 
 - name: Create log directory for mailman-web
@@ -147,7 +147,13 @@
     regexp: "^site_owner"
     line:   "site_owner = {{mailman_superuser_email}}"
 
-- name: Set the API key in mailman.cfg
+- name: Set the API url in mailman-hyperkitty.cfg
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/deployment/mailman-hyperkitty.cfg"
+    regexp: "^base_url"
+    line:   "base_url = http://localhost:8000/archives"
+
+- name: Set the API key in mailman-hyperkitty.cfg
   lineinfile:
     dest:   "{{mailman_path}}/bundler/deployment/mailman-hyperkitty.cfg"
     regexp: "^api_key"
@@ -166,11 +172,12 @@
     regexp: "Group"
     line:   "Group={{mailman_group}}"
 
-- name: Set socket in gunicorn.conf
+- name: Set ip address in gunicorn.conf
   lineinfile:
     dest:   "{{mailman_path}}/bundler/deployment/gunicorn.conf"
     regexp: "^bind"
-    line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
+    line:   "bind = ['127.0.0.1:8000']"
+#    line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
 
 - name: Run downgrade_falcon.sh
   command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/downgrade_falcon.sh" creates="{{mailman_path}}/downgrade_falcon.done"
