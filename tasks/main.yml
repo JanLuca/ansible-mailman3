@@ -197,9 +197,10 @@
 - name: Add destination for mailman
   lineinfile:
     dest:  "/etc/postfix/destinations"
-    line:  "{{mailman_domain}} OK"
-    regexp: "^{{mailman_domain}}"
+    line:  "{{item}} OK"
+    regexp: "^{{item}}"
     insertbefore: "BOF"
+  with_items: mailman_domains
   register: dest_file
 
 - name: Run postmap for the destination file

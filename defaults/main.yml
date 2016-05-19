@@ -6,6 +6,9 @@ mailman_web_user: 'www-data'
 mailman_path: '/srv/mailman'
 
 mailman_domain:  'example.org'
+mailman_domains:
+- '{{mailman_domain}}'
+mailman_web_domain: '{{mailman_domain}}'
 mailman_use_ssl: False
 
 mailman_superuser_name: 'Admin'
