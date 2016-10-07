@@ -86,6 +86,14 @@
     group: '{{mailman_group}}'
     mode:  0700
 
+- name: copy install_crontab.sh
+  template:
+    src:   install_crontab.sh.jinja2
+    dest:  '{{mailman_path}}/scripts/install_crontab.sh'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
+
 - name: copy superuser.sh
   template:
     src:   superuser.sh.jinja2
@@ -121,16 +129,6 @@
   command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh"
   args:
     creates: "{{mailman_path}}/install.done"
-
-- name: Create superuser
-  expect:
-    command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
-    creates: "{{mailman_path}}/superuser.done"
-    responses: 
-      Username: "{{mailman_superuser_name}}\n"
-      Email:    "{{mailman_superuser_email}}\n"
-      Password: "{{mailman_superuser_password}}\n"
-  no_log: True
 
 - name: Create log directory for mailman-web
   file:
@@ -249,6 +247,11 @@
   command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
   when: settings_copied.changed
 
+- name: Run install_crontab.sh
+  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install_crontab.sh"
+  args:
+    creates: "{{mailman_path}}/install_crontab.done"
+
 - name: Set correct permissions for mailman database
   file:
     path:  "{{mailman_path}}/bundler/var/mailman-web/mailman-web.sqlite"
@@ -256,6 +259,16 @@
     owner: "{{mailman_user}}"
     group: "{{mailman_group}}"
     mode:  "0660"
+
+- name: Create superuser
+  expect:
+    command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
+    creates: "{{mailman_path}}/superuser.done"
+    responses: 
+      Username: "{{mailman_superuser_name}}\n"
+      Email:    "{{mailman_superuser_email}}\n"
+      Password: "{{mailman_superuser_password}}\n"
+  no_log: True
 
 - name: Copy mailman3.service file to systemd dir
   copy:
