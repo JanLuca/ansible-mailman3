@@ -6,8 +6,8 @@ MAILMAN_ARCHIVER_KEY = '{{mailman_api_key}}'
 
 VAR_DIR = os.path.join("{{mailman_path}}", "bundler", "var")
 
-ALLOWED_HOSTS = ["localhost", "{{mailman_domain}}"]
-BROWSERID_AUDIENCES = [ "http://localhost", "http://localhost:8000", {% if mailman_use_ssl %}"https://{{mailman_domain}}", "https://{{mailman_domain}}:8000"{% else %}"http://{{mailman_domain}}", "http://{{mailman_domain}}:8000"{% endif %} ]
+ALLOWED_HOSTS = ["localhost", "{{mailman_web_domain}}"]
+BROWSERID_AUDIENCES = [ "http://localhost", "http://localhost:8000", {% if mailman_use_ssl %}"https://{{mailman_web_domain}}", "https://{{mailman_web_domain}}:8000"{% else %}"http://{{mailman_web_domain}}", "http://{{mailman_web_domain}}:8000"{% endif %} ]
 USE_SSL = {% if mailman_use_ssl %}True{% else %}False{% endif %}
 
 LANGUAGE_CODE = 'de-de'
