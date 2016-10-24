@@ -118,12 +118,24 @@
     group:      "{{mailman_group}}"
     remote_src: True
     force:      no
+  register: buildout_copied
+
+- name: Get python3 version
+  command: python3 -c 'import sys; v=sys.version_info; print("{major}.{minor}".format(major=v.major, minor=v.minor))'
+  register: python3_version
+  when: buildout_copied.changed
 
 - name: Set buildout to production mode
   lineinfile:
     dest:   "{{mailman_path}}/bundler/my_buildout.cfg"
     regexp: "^deployment"
     line:   "deployment = production"
+
+- name: Set correct python3 version for buildout
+  lineinfile:
+    dest:   "{{mailman_path}}/bundler/my_buildout.cfg"
+    regexp: "^python3-version"
+    line:   "python3-version = {{python3_version.stdout}}"
 
 - name: Run install.sh
   command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh"
