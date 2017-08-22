@@ -1,5 +1,5 @@
 #!/bin/bash
 
-{{mailman_path}}/bundler/bin/mailman-web-django-admin createsuperuser
+{{mailman_path}}/manage.py createsuperuser
 
 touch {{mailman_path}}/superuser.done

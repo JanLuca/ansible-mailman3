@@ -1,0 +1,28 @@
+[Unit]
+Description=Mailman uWSGI app
+After=syslog.target network.target
+
+[Service]
+ExecStart=/usr/bin/uwsgi --ini {{mailman_path}}/uwsgi.cfg
+User={{mailman_user}}
+Group={{mailman_group}}
+Restart=on-failure
+KillSignal=SIGQUIT
+Type=notify
+NotifyAccess=all
+WorkingDirectory={{mailman_path}}
+CapabilityBoundingSet=~CAP_SYS_ADMIN CAP_NET_ADMIN CAP_SYS_BOOT CAP_SYS_CHROOT CAP_SYS_MODULE CAP_SYS_TIME
+SystemCallFilter=~@mount @privileged @module @cpu-emulation @clock
+ReadWritePaths={{ mailman_path }}
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+NoNewPrivileges=yes
+ProtectKernelModules=yes
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

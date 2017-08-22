@@ -5,11 +5,19 @@ mailman_group: 'mailman'
 mailman_web_user: 'www-data'
 mailman_path: '/srv/mailman'
 
+mailman_name: 'example.org-Lists'
 mailman_domain:  'example.org'
 mailman_domains:
 - '{{mailman_domain}}'
 mailman_web_domain: '{{mailman_domain}}'
-mailman_use_ssl: False
+mailman_web_bind: 127.0.0.1
+mailman_web_host: '{{mailman_web_bind}}'
+mailman_web_port: 8000
+
+mailman_smtp_host: 'localhost'
+mailman_smtp_port: 25
+mailman_smtp_use_tls: True
 
 mailman_superuser_name: 'Admin'
 mailman_superuser_email: 'webmaster@example.org'
+mailman_system_email: 'mailman@example.org'

@@ -1,0 +1,38 @@
+[uwsgi]
+plugins = logfile, python
+
+# Port on which uwsgi will be listening.
+uwsgi-socket = {{mailman_web_bind}}:{{mailman_web_port}}
+
+# Move to the directory wher the django files are.
+chdir = {{mailman_path}}
+
+# Use the wsgi file provided with the django project.
+wsgi-file = wsgi.py
+
+# Setup default number of processes and threads per process.
+master = true
+process = 2
+threads = 2
+
+# Drop privielges and don't run as root.
+#uid = {{mailman_user}}
+#gid = {{mailman_group}}
+
+# Setup the django_q related worker processes.
+attach-daemon = ./manage.py qcluster
+
+# Setup the request log.
+req-logger = file:{{mailman_path}}/logs/uwsgi.log
+
+# Log cron seperately.
+logger = cron file:{{mailman_path}}/logs/uwsgi-cron.log
+log-route = cron uwsgi-cron
+
+# Log qcluster commands seperately.
+logger = qcluster file:{{mailman_path}}/logs/uwsgi-qcluster.log
+log-route = qcluster uwsgi-daemons
+
+# Last log and it logs the rest of the stuff.
+logger = file:{{mailman_path}}/logs/uwsgi-error.log
+

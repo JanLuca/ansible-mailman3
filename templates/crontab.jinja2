@@ -1,0 +1,8 @@
+@hourly  {{mailman_user}}  django-admin runjobs hourly  --pythonpath {{mailman_path}} --settings settings
+@daily   {{mailman_user}}  django-admin runjobs daily   --pythonpath {{mailman_path}} --settings settings
+@weekly  {{mailman_user}}  django-admin runjobs weekly  --pythonpath {{mailman_path}} --settings settings
+@monthly {{mailman_user}}  django-admin runjobs monthly --pythonpath {{mailman_path}} --settings settings
+@yearly  {{mailman_user}}  django-admin runjobs yearly  --pythonpath {{mailman_path}} --settings settings
+2,17,32,47 * * * * {{mailman_user}}  django-admin runjobs quarter_hourly --pythonpath {{mailman_path}} --settings settings
+* * * * *  {{mailman_user}}  django-admin runjobs minutely  --pythonpath {{mailman_path}} --settings settings
+

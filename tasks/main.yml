@@ -13,7 +13,7 @@
   - build-essential
   when: ansible_os_family == 'Debian'
 
-- name: Install python3 dependencies for Mailman 3
+- name: Install python2/3 basic dependencies for Mailman 3
   apt:
     name: '{{item}}'
   with_items:
@@ -21,199 +21,309 @@
   - python3-pip
   - python-dev
   - python-pip
-  - python-virtualenv
+  - python3-setuptools
+  - python3-wheel
+  - python-wheel
+  - python-setuptools
   when: ansible_os_family == 'Debian'
+  notify: Restart mailman3 and mailman-uwsgi
 
-- name: Ensure that ruby-sass is installed
-  apt: name=ruby-sass
+- name: Install python3 dependencies for mailman3
+  apt:
+    name: '{{item}}'
+  with_items:
+  - python3-alembic
+  - python3-click
+  - python3-dnspython
+  - python3-falcon
+  - python3-flufl.bounce
+  - python3-flufl.i18n
+  - python3-flufl.lock
+  - python3-lazr.config
+  - python3-passlib
+  - python3-requests
+  - python3-sqlalchemy
+  - python3-zope.component
+  - python3-zope.configuration
+  - python3-zope.event
+  - python3-zope.interface
   when: ansible_os_family == 'Debian'
+  notify: Restart mailman3
 
-- name: Ensure that libpq-dev is installed
-  apt: name=libpq-dev
+- name: Install python2 dependencies for hyperkitty/postorios
+  apt:
+    name: '{{item}}'
+  with_items:
+  - python-django
+  - python-django-gravatar2
+  - python-openid
+  - python-requests
+  - python-requests-oauthlib
+  - python-httplib2
+  - python-six
+  - python-tz
+  - python-zope.interface
+  - python-djangorestframework
+  - python-rjsmin
+  - python-cssmin
+  - python-django-compressor
+  - python-dateutil
+  - python-networkx
+  - python-enum34
+  - python-django-haystack
+  - python-django-extensions
+  - python-lockfile
+  - python-future
+  - python-arrow
+  - python-blessed
+  - python-django-picklefield
+  - python-whoosh
   when: ansible_os_family == 'Debian'
+  notify: Restart mailman-uwsgi
+
+- name: Ensure that sassc is installed
+  apt:
+    name: 'sassc'
+  when: ansible_os_family == 'Debian'
+  notify: Restart mailman-uwsgi
+
+- name: Ensure that lessc is installed
+  apt:
+    name: 'node-less'
+  when: ansible_os_family == 'Debian'
+  notify: Restart mailman-uwsgi
 
 - name: Ensure that pexpect is installed
-  pip: name=pexpect
+  apt:
+    name: 'python-pexpect'
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure that sqlite3 is installed
+  apt:
+    name: 'sqlite3'
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure that uwsgi is installed
+  apt:
+    name: '{{item}}'
+  with_items:
+  - uwsgi
+  - uwsgi-plugin-python
+  - uwsgi-plugin-python3
+  when: ansible_os_family == 'Debian'
+  notify: Restart mailman-uwsgi
 
 - include: user.yml
 
-#- include: nodenv.yml
-#  vars:
-#    node_version: 4.4.2
-#    nodenv_user: '{{mailman_user}}'
-#    nodenv_group: '{{mailman_group}}'
-#  tags: node
-
-# Not use depth since GitLab does not support it :-(
-- name: clone mailman-bundler
-  git:
-    repo: https://gitlab.com/mailman/mailman-bundler.git
-    dest: /srv/mailman/bundler
-    version: '{{mailman_bundler_version|default("HEAD")}}'
-  register: cloned_mailman_bundler
-
-- name: change ownership of mailman-bundler
-  file:
-    path: ~{{mailman_user}}/bundler
-    owner: '{{mailman_user}}'
-    group: '{{mailman_group}}'
-    recurse: yes
-  when: cloned_mailman_bundler.changed
-
-- name: Setup a virtualenv for mailman
-  command: su - {{mailman_user}} -c "virtualenv {{mailman_path}}/venv"
-  args:
-    creates: "{{mailman_path}}/venv"
-
-- name: Install buildout for mailman
+- name: Install mailman using pip3
   pip:
-    name: zc.buildout
-    virtualenv: '{{mailman_path}}/venv'
+    name: 'mailman'
+    executable: 'pip3'
+    state: 'latest'
+  register: mailman_pip_mailman
+  notify: Restart mailman3
 
-- name: Create script directory
-  file:
-    path:  '{{mailman_path}}/scripts'
-    state: directory
-    owner: '{{mailman_user}}'
-    group: '{{mailman_group}}'
-    mode:  0700
+- name: Install mailman-hyperkitty using pip3
+  pip:
+    name: 'mailman-hyperkitty'
+    executable: 'pip3'
+    state: 'latest'
+  register: mailman_hyperkitty_pip_mailman
+  notify: Restart mailman3
 
-- name: copy install.sh
-  template:
-    src:   install.sh.jinja2
-    dest:  '{{mailman_path}}/scripts/install.sh'
-    owner: '{{mailman_user}}'
-    group: '{{mailman_group}}'
-    mode:  0700
-
-- name: copy install_crontab.sh
-  template:
-    src:   install_crontab.sh.jinja2
-    dest:  '{{mailman_path}}/scripts/install_crontab.sh'
-    owner: '{{mailman_user}}'
-    group: '{{mailman_group}}'
-    mode:  0700
-
-- name: copy superuser.sh
-  template:
-    src:   superuser.sh.jinja2
-    dest:  '{{mailman_path}}/scripts/superuser.sh'
-    owner: '{{mailman_user}}'
-    group: '{{mailman_group}}'
-    mode:  0700
-
-- name: copy downgrade_falcon.sh
-  template:
-    src:   downgrade_falcon.sh.jinja2
-    dest:  '{{mailman_path}}/scripts/downgrade_falcon.sh'
-    owner: '{{mailman_user}}'
-    group: '{{mailman_group}}'
-    mode:  0700
-
-- name: Copy buildout config to own file
-  copy:
-    src:        "{{mailman_path}}/bundler/buildout.cfg"
-    dest:       "{{mailman_path}}/bundler/my_buildout.cfg"
-    owner:      "{{mailman_user}}"
-    group:      "{{mailman_group}}"
-    remote_src: True
-    force:      no
-  register: buildout_copied
-
-- name: Get python3 version
-  command: python3 -c 'import sys; v=sys.version_info; print("{major}.{minor}".format(major=v.major, minor=v.minor))'
-  register: python3_version
-  when: buildout_copied.changed
-
-- name: Set buildout to production mode
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/my_buildout.cfg"
-    regexp: "^deployment"
-    line:   "deployment = production"
-
-- name: Set correct python3 version for buildout
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/my_buildout.cfg"
-    regexp: "^python3-version"
-    line:   "python3-version = {{python3_version.stdout}}"
-
-- name: Run install.sh
-  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install.sh"
+- name: Ensure basic file structure is installed
+  command: mailman info
   args:
-    creates: "{{mailman_path}}/install.done"
+    chdir: '{{mailman_path}}'
+    creates: '{{mailman_path}}/var/etc/mailman.cfg'
+  become: true
+  become_user: '{{mailman_user}}'
+  no_log: True
+  notify: Restart mailman3
 
-- name: Create log directory for mailman-web
-  file:
-    path:  "/var/log/mailman-web"
-    state: "directory"
-    owner: "{{mailman_user}}"
-    group: "{{mailman_group}}"
-    mode:  "0770"
+- name: copy mailman.cfg
+  template:
+    src:   mailman.cfg.jinja2
+    dest:  '{{mailman_path}}/var/etc/mailman.cfg'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0600
+  no_log: True
+  notify: Restart mailman3
+
+- name: copy mailman-hyperkitty.cfg
+  template:
+    src:   mailman-hyperkitty.cfg.jinja2
+    dest:  '{{mailman_path}}/var/etc/mailman-hyperkitty.cfg'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0600
+  no_log: True
+  notify: Restart mailman3
+
+- name: Install hyperkitty
+  pip:
+    name: 'hyperkitty'
+    executable: 'pip2'
+    state: 'latest'
+  register: mailman_pip_hyperkitty
+  notify: Restart mailman-uwsgi
+
+- name: Install postorius
+  pip:
+    name: 'postorius'
+    executable: 'pip2'
+    state: 'latest'
+  register: mailman_pip_postorius
+  notify: Restart mailman-uwsgi
+
+- name: copy settings.py
+  copy:
+    src:   'files/settings.py'
+    dest:  '{{mailman_path}}/settings.py'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0600
+    follow: True
+  notify: Restart mailman-uwsgi
+
+- name: copy manage.py
+  copy:
+    src:    'files/manage.py'
+    dest:   '{{mailman_path}}/manage.py'
+    owner:  '{{mailman_user}}'
+    group:  '{{mailman_group}}'
+    mode:   0700
+    follow: True
+  notify: Restart mailman-uwsgi
+
+- name: copy urls.py
+  copy:
+    src:    'files/urls.py'
+    dest:   '{{mailman_path}}/urls.py'
+    owner:  '{{mailman_user}}'
+    group:  '{{mailman_group}}'
+    mode:   0600
+    follow: True
+  notify: Restart mailman-uwsgi
+
+- name: copy wsgi.py
+  copy:
+    src:    'files/wsgi.py'
+    dest:   '{{mailman_path}}/wsgi.py'
+    owner:  '{{mailman_user}}'
+    group:  '{{mailman_group}}'
+    mode:   0700
+    follow: True
+  notify: Restart mailman-uwsgi
 
 - name: Copy setting_local.py to right place
   template:
     src:   settings_local.py.jinja2
-    dest:  '{{mailman_path}}/bundler/mailman_web/settings_local.py'
+    dest:  '{{mailman_path}}/settings_local.py'
     owner: '{{mailman_user}}'
     group: '{{mailman_group}}'
     mode:  0640
   register: settings_copied
   no_log: True
+  notify: Restart mailman-uwsgi
 
-- name: Set site owner in mailman.cfg
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/deployment/mailman.cfg"
-    regexp: "^site_owner"
-    line:   "site_owner = {{mailman_superuser_email}}"
+- name: Copy crontab to /etc/cron.d
+  template:
+    src:   crontab.jinja2
+    dest:  '/etc/cron.d/mailman'
+    owner: 'root'
+    group: 'root'
+    mode:  0644
 
-- name: Set the API url in mailman-hyperkitty.cfg
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/deployment/mailman-hyperkitty.cfg"
-    regexp: "^base_url"
-    line:   "base_url = http://localhost:8000/archives"
+- name: copy superuser.sh
+  template:
+    src:   superuser.sh.jinja2
+    dest:  '{{mailman_path}}/superuser.sh'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
-- name: Set the API key in mailman-hyperkitty.cfg
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/deployment/mailman-hyperkitty.cfg"
-    regexp: "^api_key"
-    line:   "api_key = {{mailman_api_key}}"
-  no_log: True
+- name: copy fix-site-name.sh
+  template:
+    src:   fix-site-name.sh.jinja2
+    dest:  '{{mailman_path}}/fix-site-name.sh'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
-- name: Set user for mailman-web-gunicorn.service
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
-    regexp: "User"
-    line:   "User={{mailman_web_user}}"
+- name: Create logs dir
+  file:
+    path:  '{{mailman_path}}/logs'
+    state: 'directory'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0770
 
-- name: Set group for mailman-web-gunicorn.service
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
-    regexp: "Group"
-    line:   "Group={{mailman_group}}"
+- name: Create media dir
+  file:
+    path:  '{{mailman_path}}/var/media'
+    state: 'directory'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
-- name: Set ip address in gunicorn.conf
-  lineinfile:
-    dest:   "{{mailman_path}}/bundler/deployment/gunicorn.conf"
-    regexp: "^bind"
-    line:   "bind = ['127.0.0.1:8000']"
-#    line:   "bind = ['unix:{{mailman_path}}/bundler/var/gunicorn.socket']"
+- name: Create fulltext_index dir
+  file:
+    path:  '{{mailman_path}}/var/fulltext_index'
+    state: 'directory'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0700
 
-- name: Run downgrade_falcon.sh
-  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/downgrade_falcon.sh"
+- name: Migrate Django-DB
+  command: '{{mailman_path}}/manage.py migrate --no-input'
   args:
-    creates: "{{mailman_path}}/downgrade_falcon.done"
+    chdir: '{{mailman_path}}'
+  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changes
+  become: true
+  become_user: '{{mailman_user}}'
+  notify: Restart mailman-uwsgi
 
-#- name: Downgrade falcon to version 0.3
-#  pip:
-#    name:       "falcon"
-#    version:    "0.3"
-#    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
+- name: Collect static files
+  command: '{{mailman_path}}/manage.py collectstatic --no-input'
+  args:
+    chdir: '{{mailman_path}}'
+  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changes
+  become: true
+  become_user: '{{mailman_user}}'
+  notify: Restart mailman-uwsgi
 
-#- name: Upgrade mailman to latest version
-#  pip: 
-#    name:       "mailman"
-#    state:    "latest"
-#    virtualenv: "{{mailman_path}}/bundler/venv-3.4"
+- name: Compress Django files
+  command: '{{mailman_path}}/manage.py compress'
+  args:
+    chdir: '{{mailman_path}}'
+  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changes
+  become: true
+  become_user: '{{mailman_user}}'
+  notify: Restart mailman-uwsgi
+
+- name: Create superuser
+  expect:
+    command: "{{mailman_path}}/superuser.sh"
+    creates: "{{mailman_path}}/superuser.done"
+    responses: 
+      Username: "{{mailman_superuser_name}}\n"
+      Email:    "{{mailman_superuser_email}}\n"
+      Password: "{{mailman_superuser_password}}\n"
+  become: True
+  become_user: "{{mailman_user}}"
+  no_log: True
+  notify: Restart mailman-uwsgi
+
+- name: Fix Django site name
+  command: "{{mailman_path}}/fix-site-name.sh"
+  args:
+    creates: "{{mailman_path}}/fix-site-name.done"
+    chdir:   "{{mailman_path}}"
+  become: True
+  become_user: "{{mailman_user}}"
+  notify: Restart mailman-uwsgi
 
 - name: Add destination for mailman
   lineinfile:
@@ -221,7 +331,7 @@
     line:  "{{item}} OK"
     regexp: "^{{item}}"
     insertbefore: "BOF"
-  with_items: mailman_domains
+  with_items: '{{mailman_domains}}'
   register: dest_file
 
 - name: Run postmap for the destination file
@@ -229,93 +339,59 @@
   notify: reload postfix
   when: dest_file.changed
 
-- name: Fetch postfix config for mailman
-  fetch:
-    dest: "/tmp/mailmain_postfix.cfg"
-    src:  "{{mailman_path}}/bundler/deployment/postfix-main.cf"
-    flat: "yes"
-
 - name: Copy postfix config into main.cf
   blockinfile:
     dest:  "/etc/postfix/main.cf"
     marker:  "## {mark} ANSIBLE MANAGED BLOCK FOR MAILMAN3 ##"
     insertafter: "EOF"
-    block: "{{ lookup('file', '/tmp/mailmain_postfix.cfg') }}"
+    block: "{{ lookup('template', 'postfix.cf.jinja2') }}"
+  notify: reload postfix
 
-- name: Check if mailman-web log exists
-  stat:
-    path: "/var/log/mailman-web/mailman-web.log"
-  register: mailman_web_log_file
+- name: Copy mailman3.service
+  template:
+    src:   mailman3.service.jinja2
+    dest:  '/etc/systemd/system/mailman3.service'
+    owner: 'root'
+    group: 'root'
+    mode:  0644
+  notify: Restart mailman3
 
-- name: Set correct permissions for log for mailman-web
-  file:
-    path:  "/var/log/mailman-web/mailman-web.log"
-    state: "touch"
-    owner: "{{mailman_web_user}}"
-    group: "{{mailman_group}}"
-    mode:  "0660"
-  when: mailman_web_log_file.stat.exists == False
+- name: Copy uwsgi.cfg
+  template:
+    src:   uwsgi.cfg.jinja2
+    dest:  '{{mailman_path}}/uwsgi.cfg'
+    owner: '{{mailman_user}}'
+    group: '{{mailman_group}}'
+    mode:  0600
+  notify: Restart mailman-uwsgi
 
-- name: Run post update
-  command: su - {{mailman_user}} -c "{{mailman_path}}/bundler/bin/mailman-post-update"
-  when: settings_copied.changed
+- name: Copy mailman-uwsgi.service
+  template:
+    src:   mailman-uwsgi.service.jinja2
+    dest:  '/etc/systemd/system/mailman-uwsgi.service'
+    owner: 'root'
+    group: 'root'
+    mode:  0644
+  notify: Restart mailman-uwsgi
 
-- name: Run install_crontab.sh
-  command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/install_crontab.sh"
-  args:
-    creates: "{{mailman_path}}/install_crontab.done"
+- name: Copy nginx-site config
+  template:
+    src:   nginx-site.jinja2
+    dest:  '{{mailman_path}}/nginx-mailman'
+    owner: 'root'
+    group: 'root'
+    mode:  0644
 
-- name: Set correct permissions for mailman database
-  file:
-    path:  "{{mailman_path}}/bundler/var/mailman-web/mailman-web.sqlite"
-    state: "file"
-    owner: "{{mailman_user}}"
-    group: "{{mailman_group}}"
-    mode:  "0660"
+- name: Enable and start Mailman3
+  systemd:
+    name:          'mailman3'
+    state:         started
+    daemon_reload: yes
+    enabled:       yes
 
-- name: Create superuser
-  expect:
-    command: su - {{mailman_user}} -c "{{mailman_path}}/scripts/superuser.sh"
-    creates: "{{mailman_path}}/superuser.done"
-    responses: 
-      Username: "{{mailman_superuser_name}}\n"
-      Email:    "{{mailman_superuser_email}}\n"
-      Password: "{{mailman_superuser_password}}\n"
-  no_log: True
-
-- name: Copy mailman3.service file to systemd dir
-  copy:
-    src:        "{{mailman_path}}/bundler/deployment/mailman3.service"
-    dest:       "/etc/systemd/system/mailman3.service"
-    owner:      "root"
-    group:      "root"
-    remote_src: True
-    force:      no
-  register: mailman3_service_file
-
-- name: Copy mailman-web-gunicorn.service file to systemd dir
-  copy:
-    src:        "{{mailman_path}}/bundler/deployment/mailman-web-gunicorn.service"
-    dest:       "/etc/systemd/system/mailman-web-gunicorn.service"
-    owner:      "root"
-    group:      "root"
-    remote_src: True
-    force:      no
-  register: mailman_web_service_file
-
-- name: Run systemctl daemon-reload
-  shell: systemctl daemon-reload
-  when: mailman3_service_file.changed or mailman_web_service_file.changed
-
-- name: Enable and start mailman3.service
-  service:
-    name:    "mailman3"
-    state:   "started"
-    enabled: "yes"
-
-- name: Enable and start mailman-web-gunicorn.service
-  service:
-    name:    "mailman-web-gunicorn"
-    state:   "started"
-    enabled: "yes"
-
+- name: Enable and start mailman-uwsgi
+  systemd:
+    name:          'mailman-uwsgi'
+    state:         started
+    daemon_reload: yes
+    enabled:       yes

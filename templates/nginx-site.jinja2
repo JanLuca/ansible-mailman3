@@ -1,0 +1,51 @@
+upstream mailman {
+  server localhost:8000;
+}
+
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  server_name {{mailman_web_domain}};
+  root {{mailman_path}}/static;
+  index index.html;
+
+  ssl_certificate /etc/letsencrypt/live/{{mailman_web_domain}}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{mailman_web_domain}}/privkey.pem;
+  ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+  ssl_ciphers 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH';
+  ssl_prefer_server_ciphers on;
+  ssl_session_cache shared:SSL:10m;
+
+  location ^~ /.well-known/acme-challenge/ {
+    default_type "text/plain";
+    root /srv/acme-challenge;
+    allow all;
+  }
+
+  location / {
+    try_files $uri @proxy;
+  }
+
+  location /static {
+    alias {{mailman_path}}/static;
+  }
+
+  location @proxy {
+    include uwsgi_params;
+    uwsgi_pass {{mailman_web_host}}:{{mailman_web_port}};
+  }
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name {{mailman_web_domain}};
+  location ^~ /.well-known/acme-challenge/ {
+    default_type "text/plain";
+    root /srv/acme-challenge;
+    allow all;
+  }
+  location / {
+    return 301 https://$server_name$request_uri;
+  }
+}

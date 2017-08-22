@@ -1,0 +1,28 @@
+[Unit]
+Description=GNU Mailing List Manager
+After=syslog.target network.target
+
+[Service]
+Type=forking
+PIDFile={{mailman_path}}/var/master.pid
+User={{mailman_user}}
+Group={{mailman_group}}
+ExecStart=/usr/local/bin/mailman start
+ExecReload=/usr/local/bin/mailman restart
+ExecStop=/usr/local/bin/mailman stop
+WorkingDirectory={{mailman_path}}
+CapabilityBoundingSet=~CAP_SYS_ADMIN CAP_NET_ADMIN CAP_SYS_BOOT CAP_SYS_CHROOT CAP_SYS_MODULE CAP_SYS_TIME
+SystemCallFilter=~@mount @privileged @module @cpu-emulation @clock
+ReadWritePaths={{ mailman_path }}
+ProtectSystem=strict
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+NoNewPrivileges=yes
+ProtectKernelModules=yes
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

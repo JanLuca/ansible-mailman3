@@ -4,15 +4,47 @@ SECRET_KEY = '{{mailman_production_secret_key}}'
 
 MAILMAN_ARCHIVER_KEY = '{{mailman_api_key}}'
 
-VAR_DIR = os.path.join("{{mailman_path}}", "bundler", "var")
+VAR_DIR = os.path.join("{{mailman_path}}", "var")
 
-ALLOWED_HOSTS = ["localhost", "{{mailman_web_domain}}"]
-BROWSERID_AUDIENCES = [ "http://localhost", "http://localhost:8000", {% if mailman_use_ssl %}"https://{{mailman_web_domain}}", "https://{{mailman_web_domain}}:8000"{% else %}"http://{{mailman_web_domain}}", "http://{{mailman_web_domain}}:8000"{% endif %} ]
-USE_SSL = {% if mailman_use_ssl %}True{% else %}False{% endif %}
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "{{mailman_web_domain}}"]
 
 LANGUAGE_CODE = 'de-de'
 
 TIME_ZONE = 'Europe/Berlin'
+
+INSTALLED_APPS = (
+    'hyperkitty',
+    'postorius',
+    'django_mailman3',
+    # Uncomment the next line to enable the admin:
+    'django.contrib.admin',
+    # Uncomment the next line to enable admin documentation:
+    # 'django.contrib.admindocs',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'rest_framework',
+    'django_gravatar',
+    'paintstore',
+    'compressor',
+    'haystack',
+    'django_extensions',
+    'django_q',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+#    'django_mailman3.lib.auth.fedora',
+#    'allauth.socialaccount.providers.openid',
+#    'allauth.socialaccount.providers.github',
+#    'allauth.socialaccount.providers.gitlab',
+#    'allauth.socialaccount.providers.google',
+#    'allauth.socialaccount.providers.facebook',
+#    'allauth.socialaccount.providers.twitter',
+#    'allauth.socialaccount.providers.stackexchange',
+)
 
 EMAIL_CONFIRMATION_FROM = '{{mailman_superuser_email}}'
 
@@ -20,22 +52,52 @@ ADMINS = (
      ('Mailman Admin', '{{mailman_superuser_email}}'),
 )
 
+DEFAULT_FROM_EMAIL = '{{mailman_superuser_email}}'
+
+SERVER_EMAIL = '{{mailman_system_email}}'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '{{mailman_smtp_host}}'
+EMAIL_PORT = '{{mailman_smtp_port}}'
+EMAIL_USE_TLS = '{{mailman_smtp_use_tls}}'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Last part is one of 'postgresql_psycopg2', 'mysql', 'sqlite3' or '$
-        'NAME': os.path.join(VAR_DIR, 'mailman-web', 'mailman-web.sqlite'), # path to database file if using sqlite3.
+        'NAME': os.path.join(VAR_DIR, 'data', 'mailman-web.sqlite'), # path to database file if using sqlite3.
     }
 }
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True
+#SECURE_REDIRECT_EXEMPT = [
+#    "archives/api/mailman/.*",  # Request from Mailman.
+#]
+SESSION_COOKIE_SECURE = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = 'DENY'
+
+
 MEDIA_ROOT = os.path.join(VAR_DIR, 'media')
 
-STATIC_ROOT = os.path.join(VAR_DIR, "mailman-web", "static")
+#STATIC_ROOT = os.path.join(VAR_DIR, "mailman-web", "static")
 
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(VAR_DIR, "mailman-web", "fulltext_index"),
+        'PATH': os.path.join(VAR_DIR, "fulltext_index"),
     },
 }
 
-USE_INTERNAL_AUTH = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+
+COMPRESS_OFFLINE = True
+
+GRAVATAR_URL = 'http://localhost/'
+GRAVATAR_SECURE_URL = 'https://localhost/'
+GRAVATAR_DEFAULT_SIZE = '1'
+
+DEBUG = False

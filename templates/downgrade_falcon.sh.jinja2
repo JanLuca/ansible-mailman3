@@ -1,9 +1,0 @@
-#!/bin/bash
-
-source {{mailman_path}}/bundler/venv-3.4/bin/activate
-
-cd {{mailman_path}}/bundler
-
-pip3 install --upgrade falcon==0.3 mailman==3.0.3
-
-touch {{mailman_path}}/downgrade_falcon.done

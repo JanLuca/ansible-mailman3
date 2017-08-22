@@ -1,0 +1,20 @@
+[mailman]
+site_owner = {{mailman_superuser_email}}
+layout: here
+
+[paths.here]
+# Everything in the same directory
+var_dir: {{mailman_path}}/var
+bin_dir: /usr/local/bin
+
+#[database]
+#class: mailman.database.postgresql.PostgreSQLDatabase
+#url: postgres://mailman:mailman-db-password@localhost/mailman
+
+[archiver.hyperkitty]
+class: mailman_hyperkitty.Archiver
+enable: yes
+configuration: {{mailman_path}}/var/etc/mailman-hyperkitty.cfg
+
+[archiver.prototype]
+enable: yes

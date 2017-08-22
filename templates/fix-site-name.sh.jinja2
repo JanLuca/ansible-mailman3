@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/usr/bin/sqlite3 {{mailman_path}}/var/data/mailman-web.sqlite "UPDATE django_site SET name = '{{mailman_name}}', 'domain' = '{{mailman_domain}}' WHERE id = 1;"
+
+touch {{mailman_path}}/fix-site-name.done

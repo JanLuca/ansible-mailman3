@@ -1,0 +1,15 @@
+---
+
+- name: Restart mailman3
+  systemd:
+    name:          'mailman3'
+    state:         restarted
+    daemon_reload: yes
+  listen: Restart mailman3 and mailman-uwsgi
+
+- name: Restart mailman-uwsgi
+  systemd:
+    name:          'mailman-uwsgi'
+    state:         restarted
+    daemon_reload: yes
+  listen: Restart mailman3 and mailman-uwsgi

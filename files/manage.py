@@ -1,0 +1,1 @@
+../modules/mailman-suite/mailman-suite_project/manage.py
