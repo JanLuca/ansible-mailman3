@@ -161,20 +161,20 @@
   no_log: True
   notify: Restart mailman3
 
-- name: Install hyperkitty
-  pip:
-    name: 'hyperkitty'
-    executable: 'pip2'
-    state: 'latest'
-  register: mailman_pip_hyperkitty
-  notify: Restart mailman-uwsgi
-
 - name: Install postorius
   pip:
     name: 'postorius'
     executable: 'pip2'
     state: 'latest'
   register: mailman_pip_postorius
+  notify: Restart mailman-uwsgi
+
+- name: Install hyperkitty
+  pip:
+    name: 'hyperkitty'
+    executable: 'pip2'
+    state: 'latest'
+  register: mailman_pip_hyperkitty
   notify: Restart mailman-uwsgi
 
 - name: copy settings.py
