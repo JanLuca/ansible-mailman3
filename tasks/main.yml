@@ -177,6 +177,12 @@
   register: mailman_pip_hyperkitty
   notify: Restart mailman-uwsgi
 
+- name: Ensure that mailmanclient is 3.1
+  pip:
+    name: 'mailmanclient'
+    version: '3.1'
+    executable: 'pip2'
+
 - name: copy settings.py
   copy:
     src:   'files/settings.py'
