@@ -287,7 +287,7 @@
   command: '{{mailman_path}}/manage.py migrate --no-input'
   args:
     chdir: '{{mailman_path}}'
-  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changes
+  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changed
   become: true
   become_user: '{{mailman_user}}'
   notify: Restart mailman-uwsgi
@@ -296,7 +296,7 @@
   command: '{{mailman_path}}/manage.py collectstatic --no-input'
   args:
     chdir: '{{mailman_path}}'
-  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changes
+  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changed
   become: true
   become_user: '{{mailman_user}}'
   notify: Restart mailman-uwsgi
@@ -305,7 +305,7 @@
   command: '{{mailman_path}}/manage.py compress'
   args:
     chdir: '{{mailman_path}}'
-  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changes
+  when: mailman_pip_postorius.changed or mailman_pip_hyperkitty.changed
   become: true
   become_user: '{{mailman_user}}'
   notify: Restart mailman-uwsgi
